@@ -1810,5 +1810,39 @@ Referral From:
   });
 </script>
 
+  <script>
+// IndexedDB দিয়ে পয়েন্ট সেভ
+async function saveUserData(user) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('users', 'readwrite');
+    tx.objectStore('users').put(user, 'currentUser');
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function loadUserData() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('users', 'readonly');
+    const req = tx.objectStore('users').get('currentUser');
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open('earnAppDB', 1);
+    req.onupgradeneeded = () => {
+      req.result.createObjectStore('users');
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+  </script>
+
 </body>
 </html>
